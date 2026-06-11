@@ -73,4 +73,4 @@ corresponding `params.h` default.
 |-----------------|----------------------------------------------------|
 | `make small`    | builds `bench_small` — tiny params, for smoke test |
 | `make test_comp`| compress pipeline + Mont modmul micro-bench        |
-| `make test_noise`| layer-1 noise budget sanity check                 |
+| `make test_noise`| noise budget sanity check                         |
