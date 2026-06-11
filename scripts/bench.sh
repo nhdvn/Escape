@@ -1,0 +1,54 @@
+#!/bin/bash
+# Run bench skip-gen for all 21 (block, log2_db) configs in result/.
+cd "$(dirname "$0")/.."
+
+CONFIGS="
+4kb 28 1024 512 512
+4kb 29 512 1024 1024
+4kb 30 1024 1024 1024
+4kb 31 2048 1024 1024
+4kb 32 1024 2048 2048
+4kb 33 2048 2048 2048
+4kb 34 1024 4096 4096
+8kb 26 256 512 512
+8kb 27 512 512 512
+8kb 28 1024 512 512
+8kb 29 512 1024 1024
+8kb 30 1024 1024 1024
+8kb 31 2048 1024 1024
+8kb 32 1024 2048 2048
+16kb 26 256 512 512
+16kb 27 512 512 512
+16kb 28 1024 512 512
+16kb 29 512 1024 1024
+16kb 30 1024 1024 1024
+16kb 31 2048 1024 1024
+16kb 32 1024 2048 2048
+64kb 24 256 256 256
+64kb 25 512 256 256
+64kb 26 256 512 512
+64kb 27 512 512 512
+64kb 28 1024 512 512
+64kb 29 512 1024 1024
+64kb 30 1024 1024 1024
+"
+
+mapfile -t LINES < <(echo "$CONFIGS" | grep .)
+total=${#LINES[@]}
+
+for i in "${!LINES[@]}"; do
+    read block log2 n1 mr1 mc1 <<< "${LINES[$i]}"
+    bk=${block%kb}
+    out=result/$block/db_log2_$log2.log
+    echo "[$((i+1))/$total] $block log2=$log2  N1=$n1 MR1=$mr1 MC1=$mc1  -> $out"
+
+    if ! make EXTRA="-DBENCH_SKIP_GEN=1 -DBLOCK_KIB=$bk -DPLHE_N1=$n1 -DPLHE_MR1=$mr1 -DPLHE_MC1=$mc1" -B > /tmp/build_$$.log 2>&1; then
+        echo "BUILD FAILED at $block log2=$log2"
+        cat /tmp/build_$$.log | tail -5
+        continue
+    fi
+    ./bench 5 > "$out" 2>&1 || true
+    grep -E "answer comp|compress|recover comp" "$out" | tail -3
+done
+rm -f /tmp/build_$$.log
+echo DONE

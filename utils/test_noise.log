@@ -1,0 +1,9 @@
+==== v1 noise budget ====
+  params: N=16  MR=16  MC=64  LAM=128  P_BITS=8  Q_BITS=32  σ=3.2
+  noise σ: test ≈ 2^14.7   real (N1=MC1=256) ≈ 2^17.7   budget Δ/2 = 2^23
+  trials  : 200
+  failures: 0
+  max |noise|: 38031 (= 2^15.2)   avg |noise|: 12111 (= 2^13.6)
+  margin/Δ: max 0.002267   (PASS iff < 0.5)
+
+NOISE: PASS (0 failures)

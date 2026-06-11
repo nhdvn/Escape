@@ -1,0 +1,15 @@
+-O3
+-march=native
+-maes
+-mavx512dq
+-mavx512ifma
+-std=c11
+-Wall
+-Wextra
+-Wno-unused-function
+-D_POSIX_C_SOURCE=200112L
+-DZKW=7
+-Icompress
+-Iutils
+-pthread
+-fopenmp

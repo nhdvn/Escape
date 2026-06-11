@@ -1,0 +1,21 @@
+==== [1] Mont modmul (chain of 200000) ====
+  modulus bits: 4095
+  correctness: PASS  (scalar=PASS, 16-way=PASS)
+  GMP   mpz_mul+mpz_mod  :  5.088 us/op  ( 196534 ops/s)  vs GMP 1.00x
+  Mont  scalar (CIOS)    :  1.607 us/op  ( 622145 ops/s)  vs GMP 3.17x
+  Mont  16way (3kara x2) : 12.410 us/call ( 0.776 us/ct)  vs GMP 6.56x per ct
+
+==== [2] Compress pipeline ====
+  lmbda=1024  n_cts=4096  log_q=32  log_p=8  pl_bits=2048  threads=48
+  log_r=21  slots/ct=97  output_cts=43 (21.5 KiB)
+  keygen : 0.178 s  [one-time per context]
+  r_pool : 1.411 s  [offline, between queries]
+  zkey   : 0.002 s  [per query, client]
+  zkw    : 0.199 s  [per query, server]
+  [server cmp]   249.2 ms
+    cmp_cycle    166.8 ms
+    cpu_stall    13.1 ms
+    mem_stall    58.9 ms  (25% of compress)
+  compress  : 0.26 s  (0.06 ms / chunk  |  0.01 s / output-ct)
+  decompress: 0.032 s
+  correctness: PASS  (4096 / 4096 chunks match)

@@ -1,0 +1,130 @@
+-- Escape v1 Parameters --
+  Q=32  P=8  Delta=2^24  lambda=1024  N1=2048  MR1=1024  MC1=1024  sigma=3.2
+  threads    = (36, 3)
+  logical DB = 2147483648 entries (8192.00 GiB)
+  with dhint = 65536.00 GiB
+  agg        = 32.00 MiB
+  block_size = 32768 bits  ->  4096 chunk(s) per query
+--------------------------
+
+--------------------------------------------------------
+  [query comp]   140.6 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   95.6 ms
+    ans_cycle    26.4 ms
+    cpu_stall    1.5 ms
+    mem_stall    67.7 ms  (71% of answer)
+  [server cmp]   240.7 ms
+    cmp_cycle    197.5 ms
+    cpu_stall    11.2 ms
+    mem_stall    31.8 ms  (13% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.3 ms
+--------------------------------------------------------
+  [query comp]   139.9 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   98.2 ms
+    ans_cycle    25.7 ms
+    cpu_stall    2.0 ms
+    mem_stall    70.6 ms  (72% of answer)
+  [server cmp]   241.1 ms
+    cmp_cycle    192.7 ms
+    cpu_stall    14.6 ms
+    mem_stall    33.7 ms  (14% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.2 ms
+--------------------------------------------------------
+  [query comp]   139.8 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   117.6 ms
+    ans_cycle    26.6 ms
+    cpu_stall    1.0 ms
+    mem_stall    90.0 ms  (77% of answer)
+  [server cmp]   241.1 ms
+    cmp_cycle    193.4 ms
+    cpu_stall    14.1 ms
+    mem_stall    33.4 ms  (14% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.2 ms
+--------------------------------------------------------
+  [query comp]   140.2 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   119.0 ms
+    ans_cycle    26.8 ms
+    cpu_stall    0.3 ms
+    mem_stall    91.9 ms  (77% of answer)
+  [server cmp]   241.2 ms
+    cmp_cycle    196.8 ms
+    cpu_stall    11.1 ms
+    mem_stall    33.1 ms  (14% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 27.9 ms
+[ERROR] rep=0 chunk=0: got 108 expected 0
+[ERROR] rep=0 chunk=1: got 122 expected 0
+[ERROR] rep=0 chunk=2: got 136 expected 0
+[ERROR] rep=0 chunk=3: got 150 expected 0
+[ERROR] rep=0 chunk=4: got 164 expected 0
+--------------------------------------------------------
+  [query comp]   139.7 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   119.1 ms
+    ans_cycle    26.7 ms
+    cpu_stall    0.3 ms
+    mem_stall    92.0 ms  (77% of answer)
+  [server cmp]   241.2 ms
+    cmp_cycle    193.2 ms
+    cpu_stall    14.5 ms
+    mem_stall    33.3 ms  (14% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.1 ms
+--------------------------------------------------------
+  [query comp]   139.8 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   120.8 ms
+    ans_cycle    26.8 ms
+    cpu_stall    0.8 ms
+    mem_stall    93.2 ms  (77% of answer)
+  [server cmp]   241.2 ms
+    cmp_cycle    199.8 ms
+    cpu_stall    14.7 ms
+    mem_stall    26.6 ms  (11% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.0 ms
+--------------------------------------------------------
+  [query comp]   139.7 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   121.2 ms
+    ans_cycle    26.9 ms
+    cpu_stall    1.1 ms
+    mem_stall    93.2 ms  (77% of answer)
+  [server cmp]   239.8 ms
+    cmp_cycle    192.5 ms
+    cpu_stall    13.9 ms
+    mem_stall    33.3 ms  (14% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.2 ms
+--------------------------------------------------------
+  [query comp]   140.0 ms
+  [client send]  8.508 MiB  ->  1019.6 ms @ 70 Mbps
+  [server ans]   119.2 ms
+    ans_cycle    26.8 ms
+    cpu_stall    0.8 ms
+    mem_stall    91.5 ms  (77% of answer)
+  [server cmp]   244.0 ms
+    cmp_cycle    202.1 ms
+    cpu_stall    14.5 ms
+    mem_stall    27.3 ms  (11% of compress)
+  [client recv]  21.500 KiB  ->  2.5 ms @ 70 Mbps
+  [recover comp] 28.0 ms
+
+
+[online] reps=5  chunks=4096
+
+FAIL: 20448 error(s)
+
+=== summary (means over 5 measured reps) ===
+  bandwidth   = send 8.508 MiB (1019.6 ms) + recv 21.50 KiB (2.5 ms) = 8.529 MiB (1022.1 ms)
+  srv delay   = answer 119.9 + compress 241.5 = 361.3 ms
+  ans split   = ans_cycle 26.8 + cpu_stall 0.7 + mem_stall 92.4 ms (77% mem)
+  cmp split   = cmp_cycle 196.9 + cpu_stall 13.7 + mem_stall 30.7 ms (13% mem)
+  end-to-end  = query 139.9 + send 1019.6 + server (no mem_stall) 238.3 + recv 2.5 + recover 28.0 = 1428.3 ms (1.43 s)
