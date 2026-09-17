@@ -1,6 +1,27 @@
-# Escape
+# ESCAPE: Efficient Single-Server Online-Offline PIR without Periodic Preprocessing (IEEE S&P 2027)
 
-Reference implementation of Escape.
+This is the full implementation of our work ESCAPE. The algorithm details can be found in the paper (https://eprint.iacr.org/2026/2033.pdf)
+
+WARNING: This is an academic proof-of-concept prototype and has not received careful code review. This implementation is NOT ready for production use.
+
+
+
+# Citing
+
+If the code is found useful, we would be appreciated if our paper can be cited with the following bibtex format:
+
+```
+@INPROCEEDINGS{nguyen2027Escape,
+  author={Nguyen, HD and Guajardo, Jorge and Hoang, Thang},
+  booktitle = {2027 IEEE Symposium on Security and Privacy},
+  title = {{Efficient Single-Server Online-Offline PIR without Periodic Preprocessing}},
+  year = {2027}
+}
+```
+
+<br/>
+
+
 
 ## Prerequisites
 
