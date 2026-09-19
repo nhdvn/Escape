@@ -65,6 +65,12 @@ points. Step 4 compares per-query bandwidth with the OO-PIR schemes (Piano,
 RMS), and Step 5 compares storage against latency for different partition
 shapes. Steps 1-3 must run in order; Steps 4 and 5 are independent of them.
 
+These steps will reproduce the reported numbers/plots in following figures:
+- Figure 10: Total Online E2E Latency (After Step 3) 
+- Figure 11: Bandwidth Cost with Varied Entry Size (After Step 4)
+- Figure 12: Hint-Update Average Bandwidth Per Query (After Step 4)
+- Figure 13: Client Storage vs. Latency (Aftet Step 5)
+
 ### Step 1: Measure Escape (`main/bench.sh`)
 
 ```sh
@@ -188,6 +194,9 @@ formulas of each scheme, with no measurement needed, and writes four tables to
   max(DB / Q, per-query cost): the database download of a hint refresh,
   spread over the Q queries it serves, or the per-query cost of Tables 1 and 2,
   whichever is larger.
+
+- Table 1 and 2 are expected to match with Figure 11.
+- Table 3 and 4 are expected to match with Figure 12.
 
 The entry sizes, N and the query counts are constants at the top of the
 script (`DEFAULT_EXPS`, `FIXED_LOG_N`, `QUERY_EXPS`).
