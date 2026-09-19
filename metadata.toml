@@ -1,0 +1,56 @@
+# Escape: Efficient Single-Server Online-Offline PIR without Periodic Preprocessing
+# Hardware and software requirements for building and running the artifact.
+
+[project]
+name = "Escape"
+venue = "IEEE S&P 2027"
+license = "MIT"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Hardware
+# ─────────────────────────────────────────────────────────────────────────────
+[hardware]
+architecture = "x86-64"
+cpu_features_required = ["AVX-512 IFMA52", "AVX-512DQ", "AES-NI", "VAES"]
+cores_recommended = 36
+memory_min_gib = 16             # default parameters and the comparison/ sweep (up to 1 GiB databases)
+memory_large_gib = 128          # 64 KiB entries, N = 2^30 (paper setting) needs about 82 GiB
+disk_gib = 1                    # repository, build outputs, and comparison/ sources (~170 MB)
+network = true                  # only gitHub access only for comparison"
+
+[hardware.tested]
+cpu = "Intel Xeon Platinum 8360Y @ 2.40 GHz (Ice Lake-SP)"
+sockets = 2
+cores_per_socket = 24
+threads_per_core = 1
+numa_nodes = 2
+l3_cache_mib_per_socket = 54
+memory_gib = 1003
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Software
+# ─────────────────────────────────────────────────────────────────────────────
+[software]
+os = "Linux"
+compiler = "GCC with -march=native AVX-512 support"
+build = "GNU Make"
+libraries = ["GMP (libgmp, headers)", "OpenMP (libgomp, ships with GCC)"]
+python = ">= 3.8"
+perf_counters = "built into Linux (perf_event_open); needs perf_event_paranoid <= 2"
+
+[software.comparison]
+git = "any recent version"
+go = ">= 1.21"
+rust = "nightly-2024-02-07"
+cxx = "g++ with C++17, AVX-512DQ and IFMA (VIA)"
+
+[software.tested]
+os = "Rocky Linux 8.10, kernel 4.18.0-553.63.1.el8_10"
+gcc = "8.5.0"
+make = "4.2.1"
+gmp = "6.1.2"
+python = "3.9.20"
+go = "1.24.4"
+rustc = "nightly-2024-02-07"
+cmake = "3.26.5"
+git = "2.43.7"
