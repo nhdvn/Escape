@@ -4,6 +4,17 @@ This is the full implementation of our work ESCAPE. The algorithm details can be
 
 WARNING: This is an academic proof-of-concept prototype and has not received careful code review. This implementation is NOT ready for production use.
 
+# Abstract
+
+ESCAPE is a single-server online-offline PIR scheme that does not need
+periodic preprocessing. The client keeps its hint across queries. Each query is
+encrypted with lattice-based (LWE) encryption, and the server's answer is
+compressed with Paillier encryption, so the client response is constanst while
+maintaining the sublinear complexity of online-offline PIR. This
+repository contains the C implementation (optimized with AVX-512 IFMA52) and
+the scripts that reproduce the paper's comparisons against lattice-based PIR
+(SimplePIR, InsPIRe, VIA) and online-offline PIR (Piano, RMS).
+
 
 # Citing
 
