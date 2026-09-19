@@ -1,0 +1,61 @@
+Working with: n=1024; db size=2^25 (l=9879, m=5462); logq=32; p=991; sigma=6.400000
+Total packed DB size is ~64.020269 MB
+Executing SimplePIR
+Setup...
+		Offline download: 39516 KB
+Building query...
+	Elapsed: 7.076879ms
+		Online upload: 21.000000 KB
+Answering query...
+	Elapsed: 2.961471ms
+	Rate: 21617.726108 MB/s
+		Online download: 38.000000 KB
+Executing SimplePIR
+Setup...
+		Offline download: 39516 KB
+Building query...
+	Elapsed: 7.345741ms
+		Online upload: 21.000000 KB
+Answering query...
+	Elapsed: 1.280969ms
+	Rate: 49978.000214 MB/s
+		Online download: 38.000000 KB
+Executing SimplePIR
+Setup...
+		Offline download: 39516 KB
+Building query...
+	Elapsed: 6.192583ms
+		Online upload: 21.000000 KB
+Answering query...
+	Elapsed: 1.345133ms
+	Rate: 47594.006657 MB/s
+		Online download: 38.000000 KB
+Executing SimplePIR
+Setup...
+		Offline download: 39516 KB
+Building query...
+	Elapsed: 6.387433ms
+		Online upload: 21.000000 KB
+Answering query...
+	Elapsed: 789.456µs
+	Rate: 81094.157187 MB/s
+		Online download: 38.000000 KB
+Executing SimplePIR
+Setup...
+		Offline download: 39516 KB
+Building query...
+	Elapsed: 6.912718ms
+		Online upload: 21.000000 KB
+Answering query...
+	Elapsed: 1.996256ms
+	Rate: 32070.169836 MB/s
+		Online download: 38.000000 KB
+Avg SimplePIR tput, except for first run: 46470.812000 MB/s
+Std dev of SimplePIR tput, except for first run: 20186.095910 MB/s
+goos: linux
+goarch: amd64
+pkg: github.com/ahenzinger/simplepir/pir
+cpu: Intel(R) Xeon(R) Platinum 8360Y CPU @ 2.40GHz
+BenchmarkSimplePirSingle-48    	       1	10515099310 ns/op
+PASS
+ok  	github.com/ahenzinger/simplepir/pir	10.525s

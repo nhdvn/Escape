@@ -1,0 +1,106 @@
+Test VIA or VIA-C (0 or 1): 
+Test with or without Blinded Extraction (0 or 1): 
+Execution count: 
+┌───────────────────────────────────────────────┐
+│             Test for VIA Protocol             │
+├───────────────────────────────────────────────┘
+│ Database parameters:
+│   ► Length of Database(N) : 2097152
+│   ► Row: 128
+│   ► Col: 4096
+│   ► Database size: 1024 MB
+│   
+│ LWE parameters(modulus):
+│   ► Modulus Q1: 144009652944437249
+│   ► Modulus Q1_1: 268369921
+│   ► Modulus Q1_2: 536608769
+│   ► Modulus Q2: 34359214081
+│   ► Modulus Q3: 2147352577
+│   ► Modulus Q4: 32768
+│   ► Modulus P: 256
+│ LWE parameters(degree):
+│   ► Degree of RLWE1: 2048
+│   ► Degree of RLWE2: 512
+│ Gadget parameters:
+│   ► Gadget1_L: 2
+│   ► Gadget1_Base: 370758
+│   ► Gadget2_L_1: 4
+│   ► Gadget2_Base_1: 24
+│   ► Gadget2_L_2: 3
+│   ► Gadget2_Base_2: 24
+│   ► Gadget_RSK_L: 4
+│   ► Gadget_RSK_Base: 24
+├────────────────────────────────────────────────
+│ Communication overhead:
+│   ► Offline upload: 0
+│   ► Offline download: 0
+│   ► Online upload: 514.812 KiB
+│   ► Online download: 23 KiB
+├────────────────────────────────────────────────
+│   ► Setup Database: 2.06052 s
+│ 
+| ❖ Round 1: computation time
+│   ► Query Time: 6.149 ms
+│   ► Answer Time: 
+│     ◇ Dmux: 10.438 ms
+│     ◇ ModSwitch: 3.596 ms
+│     ◇ First Dimension: 812.531 ms
+│     ◇ Ring Switch: 140.199 ms
+│     ◇ CMux: 46.773 ms
+│     ◇ Final ModSwitch: 0.028 ms
+│   ► Total Answer Time: 1013.57 ms
+│ 
+│   ► Recover Time: 28 μs
+└────────────────────────────────────────────────
+| ❖ Round 2: computation time
+│   ► Query Time: 5.688 ms
+│   ► Answer Time: 
+│     ◇ Dmux: 8.549 ms
+│     ◇ ModSwitch: 3.575 ms
+│     ◇ First Dimension: 816.498 ms
+│     ◇ Ring Switch: 109.893 ms
+│     ◇ CMux: 46.553 ms
+│     ◇ Final ModSwitch: 0.027 ms
+│   ► Total Answer Time: 985.095 ms
+│ 
+│   ► Recover Time: 26 μs
+└────────────────────────────────────────────────
+| ❖ Round 3: computation time
+│   ► Query Time: 5.679 ms
+│   ► Answer Time: 
+│     ◇ Dmux: 8.444 ms
+│     ◇ ModSwitch: 3.548 ms
+│     ◇ First Dimension: 813.066 ms
+│     ◇ Ring Switch: 109.899 ms
+│     ◇ CMux: 46.585 ms
+│     ◇ Final ModSwitch: 0.027 ms
+│   ► Total Answer Time: 981.569 ms
+│ 
+│   ► Recover Time: 26 μs
+└────────────────────────────────────────────────
+| ❖ Round 4: computation time
+│   ► Query Time: 5.694 ms
+│   ► Answer Time: 
+│     ◇ Dmux: 8.468 ms
+│     ◇ ModSwitch: 3.563 ms
+│     ◇ First Dimension: 812.305 ms
+│     ◇ Ring Switch: 109.787 ms
+│     ◇ CMux: 46.366 ms
+│     ◇ Final ModSwitch: 0.027 ms
+│   ► Total Answer Time: 980.516 ms
+│ 
+│   ► Recover Time: 25 μs
+└────────────────────────────────────────────────
+| ❖ Round 5: computation time
+│   ► Query Time: 5.679 ms
+│   ► Answer Time: 
+│     ◇ Dmux: 8.406 ms
+│     ◇ ModSwitch: 3.541 ms
+│     ◇ First Dimension: 820.616 ms
+│     ◇ Ring Switch: 109.798 ms
+│     ◇ CMux: 46.587 ms
+│     ◇ Final ModSwitch: 0.027 ms
+│   ► Total Answer Time: 988.975 ms
+│ 
+│   ► Recover Time: 25 μs
+└────────────────────────────────────────────────

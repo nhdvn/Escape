@@ -1,0 +1,26 @@
+log2N  DB_MiB scheme     threads  server_s  server GiB/s  first-pass GiB/s
+   14      64 OSimplePIR      12    0.0011         57.74             57.74
+   14      64 OSimplePIR      24    0.0022         28.04             28.04
+   14      64 OSimplePIR      36    0.0017         37.32             37.32
+   14      64 SimplePIR        1    0.0050         12.59             12.59
+   14      64 InsPIRe          1    0.1360          0.46              8.91
+   14      64 VIA              1    0.0904          0.69              1.29
+   16     256 OSimplePIR      12    0.0041         61.23             61.23
+   16     256 OSimplePIR      24    0.0055         45.08             45.08
+   16     256 OSimplePIR      36    0.0037         67.82             67.82
+   16     256 SimplePIR        1    0.0216         11.58             11.58
+   16     256 InsPIRe          1    0.2070          1.21              9.81
+   16     256 VIA              1    0.2930          0.85              1.21
+   18    1024 OSimplePIR      12    0.0167         59.94             59.94
+   18    1024 OSimplePIR      24    0.0112         89.26             89.26
+   18    1024 OSimplePIR      36    0.0143         69.93             69.93
+   18    1024 SimplePIR        1    0.0826         12.11             12.11
+   18    1024 InsPIRe          1    0.4120          2.43              9.92
+   18    1024 VIA              1    0.9899          1.01              1.23
+
+Optimistic first-pass throughput (GiB/s) = mean of top 3 (across all thread counts)
+  OSimplePIR   75.67
+  SimplePIR    12.09
+  ratio OSimplePIR / SimplePIR = 6.26
+  InsPIRe       9.55   -> OInsPIRe = InsPIRe x ratio = 59.74
+  VIA           1.24   -> OVIA     = VIA x ratio     = 7.78

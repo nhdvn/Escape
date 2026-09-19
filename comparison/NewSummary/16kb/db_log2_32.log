@@ -1,0 +1,18 @@
+OO-PIR sqrt-bandwidth @ 70 Mbps:
+  (1) √N · block       = 65536 · 16384 B = 1024.00 MiB → 122713.4 ms
+  (2) 2·√N / log(√N) · block = 8192 · 16384 B = 128.00 MiB → 15339.2 ms
+  (3) √N · log(√N)     = 65536 · 16 bits = 128.0 KiB → 15.0 ms
+  total PIANO = (1) + (3) = 122.73 s
+  total RMS   = (2) + (3) = 15.35 s
+
+SimplePIR-style total online delay (≥, 70 Mbps; first_pass at 75.7 GiB/s; real square layout M=8694266 L=8702798 Ne=17617 log2p~7.4):
+  client_qgen=9042ms  upload=33.17 MiB→3975ms  server=866076ms (first_pass=866076)  download=33.20 MiB→3978ms  decode=0
+  total = 883071 ms (883.1 s)
+
+InsPIRe-style total online delay (≥, 70 Mbps; first_pass DRAM-bound at 60 GiB/s with log_p=16 (no padding); pack/rgsw multi-core; qGen single-thread):
+  dim0=2097152  t=32  client_qgen=54945ms  upload=14.16 MiB→1697ms  server=1102898ms (first_pass=1097020 + pack=5803 + rgsw=75)  download=3072 KiB→360ms  decode=0
+  total = 1159900 ms (1159.9 s)
+
+VIA-style total online delay (≥, 70 Mbps; FirstDim compute-bound at 8 GiB/s on 24c (NTT/ring-poly mul, sublinear scaling from 1.25 GB/s/core); +5% non-FirstDim overhead; multi-sub-DB + selector REUSE: 4 sub-DBs × 4 KiB native payload, ONE selector applied to all sub-DBs, download per sub-DB):
+  LR+LC=33 (8+25)  client_qgen=7ms  upload=0.75 MiB→90ms  server=8844833ms (first_pass=8423650)  download=92 KiB→11ms  decode=0
+  total = 8844941 ms (8844.9 s)

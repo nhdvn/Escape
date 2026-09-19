@@ -1,6 +1,10 @@
 #!/bin/bash
-# Run bench skip-gen for all 21 (block, log2_db) configs in result/.
+# Run bench skip-gen for all (block, log2_db) configs and append a summary
+# block to each log. Output base dir defaults to result/ but can be overridden:
+#   OUT_BASE=result_rerun scripts/bench.sh   # write to result_rerun/ instead
 cd "$(dirname "$0")/.."
+
+OUT_BASE="${OUT_BASE:-result}"
 
 CONFIGS="
 4kb 28 1024 512 512
@@ -39,7 +43,8 @@ total=${#LINES[@]}
 for i in "${!LINES[@]}"; do
     read block log2 n1 mr1 mc1 <<< "${LINES[$i]}"
     bk=${block%kb}
-    out=result/$block/db_log2_$log2.log
+    mkdir -p "$OUT_BASE/$block"
+    out=$OUT_BASE/$block/db_log2_$log2.log
     echo "[$((i+1))/$total] $block log2=$log2  N1=$n1 MR1=$mr1 MC1=$mc1  -> $out"
 
     if ! make EXTRA="-DBENCH_SKIP_GEN=1 -DBLOCK_KIB=$bk -DPLHE_N1=$n1 -DPLHE_MR1=$mr1 -DPLHE_MC1=$mc1" -B > /tmp/build_$$.log 2>&1; then
@@ -48,7 +53,9 @@ for i in "${!LINES[@]}"; do
         continue
     fi
     ./bench 5 > "$out" 2>&1 || true
-    grep -E "answer comp|compress|recover comp" "$out" | tail -3
+    # Append (idempotently) the means summary block to this log.
+    python3 -c "import sys; sys.path.insert(0,'scripts'); import summary; summary.update_log('$out')"
+    grep -E "srv delay|^OK$|^FAIL" "$out" | tail -3
 done
 rm -f /tmp/build_$$.log
 echo DONE
