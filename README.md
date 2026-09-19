@@ -5,7 +5,6 @@ This is the full implementation of our work ESCAPE. The algorithm details can be
 WARNING: This is an academic proof-of-concept prototype and has not received careful code review. This implementation is NOT ready for production use.
 
 
-
 # Citing
 
 If the code is found useful, we would be appreciated if our paper can be cited with the following bibtex format:
@@ -22,34 +21,112 @@ If the code is found useful, we would be appreciated if our paper can be cited w
 <br/>
 
 
+## Environment
 
-## Prerequisites
+**Hardware**
 
-- Linux, x86-64 CPU with **AVX-512 IFMA52** (plus AVX-512F/DQ and AES-NI),
-  e.g. Intel Ice Lake-SP or newer
-- GCC 9+ with `-march=native`, GNU Make
-- `libgmp-dev` (or distro equivalent), `libgomp` (ships with GCC)
-- Python 3.8+ for the scripts in `main/`, `comparison/` and `offline/`
+- x86-64 CPU with AVX-512 IFMA52, AVX-512DQ and AES-NI (e.g. Intel Ice Lake-SP or newer)
+- 36 cores recommended (the server uses 36 threads; fewer cores work, only slower)
+- 16 GiB of RAM for the default settings; about 128 GiB for the largest ones
+  (64 KiB entries with N = 2^30 need about 82 GiB)
+- About 1 GiB of disk, and internet access to download the courterparts' codebases
 
-The results in the paper use the AVX-512 IFMA52 code path
-(`compress/_m512.c`). On a CPU without IFMA52 the Makefile still builds a GMP
-fallback (`compress/_gmpz.c`), but its timings do not correspond to the paper.
+The results in the paper use the AVX-512 IFMA52 code path (`compress/_m512.c`). 
+On a CPU without IFMA52 the Makefile still fallback to GMP (`compress/_gmpz.c`), 
+but the timings would then not correspond to the paper.
+
+Tested on 2 x Intel Xeon Platinum 8360Y (48 cores in total) with 1 TB of RAM.
+
+**Software**
+
+- Linux (tested on Rocky Linux 8.10)
+- GCC with AVX-512 support, GNU Make, GMP and OpenMP (tested with GCC 8.5.0)
+- Python 3.8+ (tested with 3.9)
+- Go 1.21+ (tested with 1.24), for the SimplePIR baselines
+- Rust via rustup, for the InsPIRe baseline (rustup installs the nightly
+  toolchain that InsPIRe pins automatically)
+- git and g++ with C++17, to download and build the baselines
+
+All versions we tested with are listed in [`metadata.toml`](metadata.toml).
+
+
+Quick install:
+```sh
+# GCC, Make, GMP and OpenMP (Debian / Ubuntu)
+sudo apt install build-essential libgmp-dev libgomp1
+
+# GCC, Make, GMP and OpenMP (Rocky / RHEL / Fedora)
+sudo dnf install gcc gcc-c++ make gmp-devel libgomp
+
+# Rust, via rustup (only needed for the baselines in Steps 2-3)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source "$HOME/.cargo/env"
+
+# Go, official release (only needed for the baselines in Steps 2-3)
+wget https://go.dev/dl/go1.24.4.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.24.4.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin             # add to ~/.bashrc to keep it
+```
 
 Quick check:
 ```sh
 gcc --version                                   # >= 9
-ldconfig -p | grep gmp                          # libgmp.so.10 present
 grep -o -w avx512ifma /proc/cpuinfo | head -1   # must print avx512ifma
+ldconfig -p | grep gmp                          # libgmp.so.10 present
+ldconfig -p | grep gomp                         # libgomp.so.1 present (OpenMP)
+python3 --version                               # >= 3.8
+go version                                      # >= 1.21
+rustup --version && cargo --version             # rustup and cargo present
 ```
 
 Full hardware and software requirements, including the versions we tested
 with, are listed in [`metadata.toml`](metadata.toml).
 
-## Build
+
+
+
+## Directory Structure
+
+```
+bench.c          benchmark driver: builds the virtual DB, runs client/server, times each stage
+Makefile         builds ./bench (IFMA52 or GMP compress backend)
+metadata.toml    hardware / software requirements and tested versions
+
+plhe/            LWE-based PLHE primitives; params.h holds all parameters (N1, MR1, MC1, BLOCK_KIB, ...)
+client/          client: query generation and answer recovery
+server/          server: answer computation, then compression of the response
+compress/        Paillier compression of the LWE answer
+                   _m512.c: AVX-512 IFMA52 backend (used in the paper), mont*.h: Montgomery primitives
+                   _gmpz.c: portable GMP fallback
+channel/         in-memory client <-> server channel (message exchange)
+utils/           virtual database (db.h), perf-counter timing (measure.h), thread barrier,
+                   and standalone tests (test_cpu, test_comp, test_noise)
+
+main/            Step 1: bench.sh (28-setting sweep), summary.py (per-log summary),
+                   estimator.py (LWE security estimate)
+result/          Step 1 output: result/<entry>/db_log2_<log2N>.log
+
+comparison/      Steps 2-3: lattice-based PIR baselines
+  measure.py       downloads, builds and measures SimplePIR, InsPIRe, VIA, OSimplePIR
+  extrapolate.py   extrapolates the baselines to Escape's settings, writes plot points
+  OSimplePIR/      our OpenMP build of SimplePIR
+  Measure/         per-run logs of measure.py
+  summary.log      measured throughputs (Optimistic section feeds extrapolate.py)
+  NewSummary/      extrapolate.py output (per-setting logs, bandwidth, compute, latency)
+
+offline/         Steps 4-5: OO-PIR comparison (Piano, RMS)
+  bandwidth.py     per-query and hint-update bandwidth -> bandwidth.log
+  bench.sh         Escape runs over partition shapes -> result_/
+  storage.py       client storage vs latency -> storage.log
+result_/         offline/bench.sh output
+```
+
+
+## Test Build
 
 ```sh
-make           # builds ./bench with default params
 make clean     # remove build/ and binaries
+make           # builds ./bench with default params
 ```
 
 Defaults live in [`plhe/params.h`](plhe/params.h):
