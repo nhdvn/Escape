@@ -270,24 +270,13 @@ corresponding `params.h` default.
 Run from `comparison/`:
 
 ```sh
-# throughputs from another summary file, e.g. the previous run (--summary goes before the subcommand)
-python3 extrapolate.py --summary summary.prev generate
-python3 extrapolate.py --summary summary.prev bandwidth
-python3 extrapolate.py --summary summary.prev compute
-python3 extrapolate.py latency      # reads the logs just written by generate
-
-# write to another folder instead of NewSummary/
-python3 extrapolate.py generate  --base-dir OtherSummary
-python3 extrapolate.py bandwidth --base-dir OtherSummary
-python3 extrapolate.py compute   --base-dir OtherSummary
-python3 extrapolate.py latency   --base-dir OtherSummary
-
-# only one setting: 64 KiB entries, N = 2^30
-python3 extrapolate.py generate --item-size 65536 --log2N 30
-
-# only a range of settings: 16 KiB entries, N = 2^26 ... 2^32
-python3 extrapolate.py generate --item-size 16384 --range 26-32
+python3 extrapolate.py --summary summary.prev generate          # throughputs from another summary file
+python3 extrapolate.py generate --base-dir OtherSummary         # write to another folder
+python3 extrapolate.py generate --item-size 65536 --log2N 30    # one setting: 64 KiB, N = 2^30
+python3 extrapolate.py generate --item-size 16384 --range 26-32 # a range: 16 KiB, N = 2^26 ... 2^32
 ```
+
+`--summary` and `--base-dir` work with every subcommand.
 
 ## Other Targets
 
