@@ -7,6 +7,8 @@ Subcommands:
              NewSummary/{4kb,8kb,16kb,64kb}/db_log2_*.log (next to this script).
   bandwidth  Write NewSummary/bandwidth (upload + download per scheme).
   compute    Write NewSummary/compute (client_qgen + server per scheme).
+  latency    Write NewSummary/latency (end-to-end latency per scheme, from the
+             generate logs and Escape's logs; run generate first).
 
 Usage:
     python3 extrapolate.py generate                                          # all scales (4/8/16/64 KiB)
@@ -395,7 +397,7 @@ def _fmt_bytes(b):
     """Render bytes as MiB (3 decimals) -- single unit so columns align."""
     return f"{b / 1024**2:>9.3f} MiB"
 
-ESCAPE_RESULT_BASE = os.path.join(REPO, "result")       # Escape bench logs (scripts/bench.sh)
+ESCAPE_RESULT_BASE = os.path.join(REPO, "result")       # Escape bench logs (main/bench.sh)
 RE_ESCAPE_BW = re.compile(
     r'^\s*bandwidth\s*=\s*send\s+([\d.]+)\s*(MiB|KiB).*?recv\s+([\d.]+)\s*(MiB|KiB)',
     re.MULTILINE)
@@ -514,6 +516,63 @@ def cmd_compute(base_dir):
     print(f"wrote {path}")
 
 # ──────────────────────────────────────────────────────────────────────────────
+# latency: end-to-end latency per (scheme, block, log2N) into NewSummary/latency
+# ──────────────────────────────────────────────────────────────────────────────
+RE_TOTAL = {
+    'SimplePIR': re.compile(r'^SimplePIR-style.*?\n\s*total = ([\d.]+) ms', re.M | re.S),
+    'InsPIRe':   re.compile(r'^InsPIRe-style.*?\n\s*total = ([\d.]+) ms', re.M | re.S),
+    'VIA':       re.compile(r'^VIA-style.*?\n\s*total = ([\d.]+) ms', re.M | re.S),
+    'Piano':     re.compile(r'total PIANO\s*=.*?=\s*([\d.]+) s'),
+    'RMS':       re.compile(r'total RMS\s*=.*?=\s*([\d.]+) s'),
+}
+RE_ESCAPE_E2E = re.compile(r'^\s*end-to-end\s*=.*=\s*([\d.]+)\s*ms', re.M)
+
+def _escape_latency(block, log2N):
+    """Read the 'end-to-end' line of <repo>/result/<block>/db_log2_<log2N>.log (ms):
+       query + send + server (no mem_stall) + recv + recover, means over 5 reps."""
+    p = os.path.join(ESCAPE_RESULT_BASE, block, f'db_log2_{log2N}.log')
+    if not os.path.exists(p): return None
+    m = RE_ESCAPE_E2E.search(open(p).read())
+    return float(m.group(1)) / 1000 if m else None
+
+def cmd_latency(base_dir):
+    """For each scheme, list the end-to-end latency per (block, log2N), taken from the
+       per-setting logs written by `generate` (run it first) and from Escape's logs."""
+    rows = []  # (scheme, block, log2N, seconds)
+    for block, log2N_range, item_bits in CONFIGS:
+        for log2N in log2N_range:
+            p = os.path.join(base_dir, block, f'db_log2_{log2N}.log')
+            assert os.path.exists(p), f"{p} not found (run `generate` first)"
+            txt = open(p).read()
+            for scheme, rx in RE_TOTAL.items():
+                m = rx.search(txt)
+                assert m, f"no {scheme} total in {p}"
+                val = float(m.group(1))
+                rows.append((scheme, block, log2N, val if rx.pattern.endswith(' s') else val / 1000))
+            esc = _escape_latency(block, log2N)
+            if esc is not None:
+                rows.append(('Escape', block, log2N, esc))
+    out_lines = ["End-to-end latency (qgen + upload + server + download, seconds), per (scheme, block).\n"
+                 "log2N reindexed 1..K within each block; each line: (idx, total_s).\n"
+                 f"Piano / RMS: bandwidth-only latency at {NETWORK_MBPS} Mbps (no server compute).\n"
+                 "Escape: end-to-end as reported in its logs.\n"]
+    for scheme in ('SimplePIR', 'InsPIRe', 'VIA', 'Piano', 'RMS', 'Escape'):
+        out_lines.append(f"=== {scheme} ===")
+        per_block = {}
+        for s, block, log2N, sec in rows:
+            if s != scheme: continue
+            per_block.setdefault(block, []).append(sec)
+        for block, totals in per_block.items():
+            out_lines.append(f"  {block}:")
+            for i, t in enumerate(totals):
+                out_lines.append(f"    ({i+1}, {t:.3f})")
+        out_lines.append("")
+    path = os.path.join(base_dir, 'latency')
+    with open(path, 'w') as f:
+        f.write("\n".join(out_lines))
+    print(f"wrote {path}")
+
+# ──────────────────────────────────────────────────────────────────────────────
 # CLI
 # ──────────────────────────────────────────────────────────────────────────────
 def _resolve_range(args, default_range):
@@ -551,6 +610,9 @@ if __name__ == '__main__':
     sp_c = sub.add_parser('compute', help='write NewSummary/compute (client_qgen + server per scheme)')
     sp_c.add_argument('--base-dir', default=OUT_BASE)
 
+    sp_l = sub.add_parser('latency', help='write NewSummary/latency (end-to-end latency per scheme; run generate first)')
+    sp_l.add_argument('--base-dir', default=OUT_BASE)
+
     args = p.parse_args()
     load_rates(args.summary)
 
@@ -570,3 +632,6 @@ if __name__ == '__main__':
 
     elif args.cmd == 'compute':
         cmd_compute(args.base_dir)
+
+    elif args.cmd == 'latency':
+        cmd_latency(args.base_dir)

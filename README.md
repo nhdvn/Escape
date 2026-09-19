@@ -29,7 +29,7 @@ If the code is found useful, we would be appreciated if our paper can be cited w
   e.g. Intel Ice Lake-SP or newer
 - GCC 9+ with `-march=native`, GNU Make
 - `libgmp-dev` (or distro equivalent), `libgomp` (ships with GCC)
-- Python 3.8+ for the scripts in `scripts/` and `comparison/`
+- Python 3.8+ for the scripts in `main/`, `comparison/` and `offline/`
 
 The results in the paper use the AVX-512 IFMA52 code path
 (`compress/_m512.c`). On a CPU without IFMA52 the Makefile still builds a GMP
@@ -58,16 +58,18 @@ which describes a logical 64 GiB database (16 M entries × 4 KiB each).
 
 ## Reproducing The Paper Results
 
-The comparison in the paper is produced in three steps, run in this order
-from the repository root. Step 1 measures Escape, step 2 measures the
-baselines, and step 3 extrapolates the baselines to Escape's settings and
-writes the plot points.
+The comparison in the paper is produced in five steps, run from the
+repository root. Step 1 measures Escape, Step 2 measures the baselines, and
+Step 3 extrapolates the baselines to Escape's settings and writes the plot
+points. Step 4 compares per-query bandwidth with the OO-PIR schemes (Piano,
+RMS), and Step 5 compares storage against latency for different partition
+shapes. Steps 1-3 must run in order; Steps 4 and 5 are independent of them.
 
-### Step 1: Measure Escape (`scripts/bench.sh`)
+### Step 1: Measure Escape (`main/bench.sh`)
 
 ```sh
-scripts/bench.sh                          # writes result/
-OUT_BASE=result_rerun scripts/bench.sh    # or write to another folder
+main/bench.sh                          # writes result/
+OUT_BASE=result_rerun main/bench.sh    # or write to another folder
 ```
 
 The script rebuilds and runs `./bench 5` for 28 settings (entry size ×
@@ -90,15 +92,15 @@ The server uses 36 threads. The largest settings (64 KiB entries) need about
 82 GiB of RAM, and the whole sweep takes tens of minutes because every
 setting is rebuilt.
 
-### Step 2: Measure The Baselines (`comparison/measure.py`)
+### Step 2: Measure Lattice-Based PIR (`comparison/measure.py`)
 
 ```sh
 cd comparison
 python3 measure.py
 ```
 
-The script downloads the baselines from GitHub into `comparison/` and builds
-them:
+The script downloads the following baselines from GitHub into `comparison/` 
+and builds them:
 
 - **SimplePIR** (`ahenzinger/simplepir`)
 - **InsPIRe** (`google/private-membership/research/InsPIRe`)
@@ -108,9 +110,7 @@ It also uses **OSimplePIR**, our OpenMP build of SimplePIR, which is part of
 this repository. It then measures each scheme on 2^14, 2^16 and 2^18 entries
 of 4 KiB, 5 trials each: SimplePIR, InsPIRe and VIA single-threaded, and
 OSimplePIR with 12, 24 and 36 threads. It needs internet access and these
-extra tools: git, Go 1.21+, Rust via rustup (InsPIRe pins its own nightly
-toolchain, which rustup installs automatically), and g++ with C++17 and
-AVX-512.
+extra tools: git, Go 1.21+, Rust via rustup, and g++ with C++17 and AVX-512.
 
 Outputs:
 
@@ -131,14 +131,22 @@ cd comparison
 python3 extrapolate.py generate     # per-setting breakdown of every scheme
 python3 extrapolate.py bandwidth    # plot points: upload + download (MiB)
 python3 extrapolate.py compute      # plot points: query generation + server (s)
+python3 extrapolate.py latency      # plot points: end-to-end latency (s); run after generate
 ```
 
 The script takes the six throughputs from the Optimistic section of
 `comparison/summary.log` (SimplePIR, InsPIRe and VIA, single- and
 multi-threaded) and optimistically extrapolates each baseline to the same 
-28 settings as step 1, without assuming any memory or computation limits.
-It adds the OO-PIR baselines (Piano and RMS), whose primary cost is
-bandwidth only, and reads Escape's numbers from the `result/` logs of step 1.
+28 settings as Step 1, without assuming any memory or computation limits.
+Note the obtained results can witness differences due to extrapolating on
+measurement from Step 2. Regardless, the order-of-magnitudes between
+Escape and these baselines should remain as reported.
+
+For OO-PIR baselines (Piano and RMS) whose computation cost is negligible,
+it computes the query and response bandwidth cost, which is the dominated 
+overhead in OO-PIR.
+
+Finally, it reads Escape's numbers from the `result/` logs of Step 1.
 Everything is written to `comparison/NewSummary/`:
 
 - `<entry>/db_log2_<log2N>.log`: the breakdown for one setting (query
@@ -149,31 +157,72 @@ Everything is written to `comparison/NewSummary/`:
 - `compute`: client query generation + server time in seconds for the same
   schemes. Piano and RMS are 0 (bandwidth only). For Escape, memory-stall
   time is excluded.
+- `latency`: end-to-end latency in seconds (query generation + upload +
+  server + download) for the same schemes. It is read from the `total` lines
+  of the per-setting logs written by `generate` (so run `generate` first) and
+  from the `end-to-end` line of Escape's `result/` logs. For Piano and RMS it
+  is the transfer time only; for Escape the server part excludes memory-stall
+  time.
 
-In `bandwidth` and `compute` the points are grouped by scheme, then by entry
+In `bandwidth`, `compute` and `latency` the points are grouped by scheme, then by entry
 size, one `(index, value)` line per database size, where the index counts
 1, 2, … through the sizes in the Table above. The lines can be pasted
 directly as plot coordinates.
 
-Other ways to run it (from `comparison/`):
+### Step 4: Compare Bandwidth (`offline/bandwidth.py`)
 
 ```sh
-# throughputs from another summary file, e.g. the previous run (--summary goes before the subcommand)
-python3 extrapolate.py --summary summary.prev generate
-python3 extrapolate.py --summary summary.prev bandwidth
-python3 extrapolate.py --summary summary.prev compute
-
-# write to another folder instead of NewSummary/
-python3 extrapolate.py generate  --base-dir OtherSummary
-python3 extrapolate.py bandwidth --base-dir OtherSummary
-python3 extrapolate.py compute   --base-dir OtherSummary
-
-# only one setting: 64 KiB entries, N = 2^30
-python3 extrapolate.py generate --item-size 65536 --log2N 30
-
-# only a range of settings: 16 KiB entries, N = 2^26 ... 2^32
-python3 extrapolate.py generate --item-size 16384 --range 26-32
+python3 offline/bandwidth.py
 ```
+
+The script computes per-query bandwidth (upload + download, in MiB) from the
+formulas of each scheme, with no measurement needed, and writes four tables to
+`offline/bandwidth.log`:
+
+- **Table 1**: a fixed 64 TiB database, for entry sizes 2^3 ... 2^18 bytes
+  (N = 64 TiB / entry size). Escape vs Piano vs RMS, with Escape's
+  N1 x MR1 x MC1 split for each N.
+- **Table 2**: a fixed N = 2^30 entries, for the same entry sizes.
+- **Tables 3 and 4**: hint-update bandwidth per query for (2^30 x 8 KiB) and
+  (2^30 x 64 KiB) databases, for 2^11 ... 2^35 online queries. Each value is
+  max(DB / Q, per-query cost): the database download of a hint refresh,
+  spread over the Q queries it serves, or the per-query cost of Tables 1 and 2,
+  whichever is larger.
+
+The entry sizes, N and the query counts are constants at the top of the
+script (`DEFAULT_EXPS`, `FIXED_LOG_N`, `QUERY_EXPS`).
+
+### Step 5: Compare Storage And Latency (`offline/bench.sh`, `offline/storage.py`)
+
+```sh
+offline/bench.sh                           # writes result_/
+python3 offline/storage.py                 # writes offline/storage.log
+```
+
+`offline/bench.sh` works like `main/bench.sh`, but fixes N = 2^30 and runs 4
+partition shapes N1 x MR1 x MC1 for each of the 8, 16 and 64 KiB entry sizes:
+
+| N1 = \|A\| | MR1 = MC1 |
+|------------|-----------|
+| 1024       | 1024      |
+| 4096       | 512       |
+| 16384      | 256       |
+| 65536      | 128       |
+
+It writes `result_/<entry>_30_n<N1>.log` (skip-gen, 5 repetitions, with the
+same summary block as Step 1). Use `OUT_BASE=<dir> offline/bench.sh` to write
+elsewhere. The largest setting (64 KiB, N1 = 65536) takes about 15 minutes and
+about 82 GiB of RAM.
+
+`offline/storage.py` then writes two tables to `offline/storage.log`:
+
+- **Escape**: for each shape, the end-to-end latency from the `result_/` log
+  and the storage MR1 x MC1 x alpha x entry size, where N = N1 x MR1 x MC1 and
+  alpha = log2(N) if MR1 x MC1 < sqrt(N), otherwise ln(N).
+- **OO-PIR** (Piano, RMS) at N = 2^30 with 8, 16 and 64 KiB entries: the
+  latency is the per-query bandwidth of Step 4 sent at 70 Mbps, and the
+  storage is sqrt(N) x 40 x 4 x entry size (Piano) or sqrt(N) x 40 x 3 x entry
+  size (RMS).
 
 ## Manual Benchmark
 
@@ -215,6 +264,30 @@ make EXTRA="-DBLOCK_KIB=64 -DPLHE_N1=16384 -DPLHE_MR1=256 -DPLHE_MC1=256" -B
 
 `-B` forces a rebuild. Any `-D<MACRO>=<value>` in `EXTRA` overrides the
 corresponding `params.h` default.
+
+## Optional: Other Ways To Run `extrapolate.py`
+
+Run from `comparison/`:
+
+```sh
+# throughputs from another summary file, e.g. the previous run (--summary goes before the subcommand)
+python3 extrapolate.py --summary summary.prev generate
+python3 extrapolate.py --summary summary.prev bandwidth
+python3 extrapolate.py --summary summary.prev compute
+python3 extrapolate.py latency      # reads the logs just written by generate
+
+# write to another folder instead of NewSummary/
+python3 extrapolate.py generate  --base-dir OtherSummary
+python3 extrapolate.py bandwidth --base-dir OtherSummary
+python3 extrapolate.py compute   --base-dir OtherSummary
+python3 extrapolate.py latency   --base-dir OtherSummary
+
+# only one setting: 64 KiB entries, N = 2^30
+python3 extrapolate.py generate --item-size 65536 --log2N 30
+
+# only a range of settings: 16 KiB entries, N = 2^26 ... 2^32
+python3 extrapolate.py generate --item-size 16384 --range 26-32
+```
 
 ## Other Targets
 

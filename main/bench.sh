@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run bench skip-gen for all (block, log2_db) configs and append a summary
 # block to each log. Output base dir defaults to result/ but can be overridden:
-#   OUT_BASE=result_rerun scripts/bench.sh   # write to result_rerun/ instead
+#   OUT_BASE=result_rerun main/bench.sh   # write to result_rerun/ instead
 cd "$(dirname "$0")/.."
 
 OUT_BASE="${OUT_BASE:-result}"
@@ -54,7 +54,7 @@ for i in "${!LINES[@]}"; do
     fi
     ./bench 5 > "$out" 2>&1 || true
     # Append (idempotently) the means summary block to this log.
-    python3 -c "import sys; sys.path.insert(0,'scripts'); import summary; summary.update_log('$out')"
+    python3 -c "import sys; sys.path.insert(0,'main'); import summary; summary.update_log('$out')"
     grep -E "srv delay|^OK$|^FAIL" "$out" | tail -3
 done
 rm -f /tmp/build_$$.log
