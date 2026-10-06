@@ -30,9 +30,24 @@ def sh(cmd, cwd=WORK, log=None, stdin=None):
                    stdout=out, stderr=subprocess.STDOUT if out else None)
 
 
-def clone(url, name):
-    if not os.path.isdir(os.path.join(WORK, name)):
-        sh(f"git clone --depth 1 {url} {name}")
+SIMPLEPIR = ("https://github.com/ahenzinger/simplepir", "e9020b03bf2872c75b8954e749e32408b5db87ed")
+INSPIRE = ("https://github.com/google/private-membership", "25b2fa3e5db40ef8bc16d7e4c43475032f792faf")
+VIA = ("https://github.com/owniai/VIA", "f65aa9de14ea49fef3bc090885a0db863f65557d")
+
+
+def clone(repo, name, subdir=""):
+    """Check out repo = (url, commit) into WORK/name (only its subdir, if given), unless already there."""
+    if os.path.isdir(os.path.join(WORK, name)):
+        return
+    url, commit = repo
+    tmp = f"{name}.tmp" if subdir else name
+    sh(f"git init -q {tmp}")
+    if subdir:
+        sh(f"git sparse-checkout set {subdir}", cwd=f"{WORK}/{tmp}")
+    sh(f"git fetch -q --depth 1 {'--filter=blob:none' if subdir else ''} {url} {commit} "
+       f"&& git checkout -q FETCH_HEAD", cwd=f"{WORK}/{tmp}")
+    if subdir:
+        sh(f"mv {tmp}/{subdir} {name} && rm -rf {tmp}")
 
 
 def mean(xs):
@@ -49,7 +64,7 @@ def go_seconds(s):
 
 def simplepir(log_n, folder="SimplePIR", env="", tag=None):
     if folder == "SimplePIR":                      # OSimplePIR is expected to exist already
-        clone("https://github.com/ahenzinger/simplepir", "SimplePIR")
+        clone(SIMPLEPIR, "SimplePIR")
     log = f"{LOGS}/{tag or folder.lower()}_n{log_n}.log"
     sh(f"{env} LOG_N={log_n} D={ITEM_BYTES * 8} go test -bench=BenchmarkSimplePirSingle -run='^$' -timeout 0",
        cwd=f"{WORK}/{folder}/pir", log=log)
@@ -60,10 +75,7 @@ def simplepir(log_n, folder="SimplePIR", env="", tag=None):
 
 def inspire(log_n):
     d = f"{WORK}/InsPIRe"
-    if not os.path.isdir(d):   # InsPIRe is a subfolder of google/private-membership: keep only it
-        sh("git clone --depth 1 --filter=blob:none --sparse https://github.com/google/private-membership pm")
-        sh("git sparse-checkout set research/InsPIRe", cwd=f"{WORK}/pm")
-        sh("mv pm/research/InsPIRe InsPIRe && rm -rf pm")
+    clone(INSPIRE, "InsPIRe", "research/InsPIRe")        # a subfolder of google/private-membership
     sh("cargo build --release --bin inspire", cwd=d)
     js = f"{LOGS}/inspire_n{log_n}.json"
     sh(f"./target/release/inspire --num-items {1 << log_n} --item-size-bits {ITEM_BYTES * 8} "
@@ -74,7 +86,7 @@ def inspire(log_n):
 
 
 def via(log_n):
-    clone("https://github.com/owniai/VIA", "VIA")  # ships HEXL headers + prebuilt lib/libhexl.a
+    clone(VIA, "VIA")                              # ships HEXL headers + prebuilt lib/libhexl.a
     v = f"{WORK}/VIA"
 
     # VIA stores 4 KiB records; N = 2^(LOG_ROW + LOG_COL - 1), split as in our earlier VIA runs

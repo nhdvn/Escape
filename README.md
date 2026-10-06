@@ -199,9 +199,9 @@ python3 measure.py
 The script downloads the following baselines from GitHub into `comparison/` 
 and builds them:
 
-- **SimplePIR** (`ahenzinger/simplepir`)
-- **InsPIRe** (`google/private-membership/research/InsPIRe`)
-- **VIA** (`owniai/VIA`, which ships its own Intel HEXL library)
+- **SimplePIR** (`ahenzinger/simplepir`, commit `e9020b0`)
+- **InsPIRe** (`google/private-membership/research/InsPIRe`, commit `25b2fa3`)
+- **VIA** (`owniai/VIA`, commit `f65aa9d`, with its own Intel HEXL)
 
 It also uses **OSimplePIR**, our OpenMP build of SimplePIR, which is part of
 this repository. It then measures each scheme on 2^14, 2^16 and 2^18 entries
