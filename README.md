@@ -22,12 +22,27 @@ If the code is found useful, we would be appreciated if our paper can be cited w
 
 ```
 @INPROCEEDINGS{nguyen2027Escape,
-  author={Nguyen, Hoang-Dung and Guajardo, Jorge and Hoang, Thang},
+  author = {Nguyen, Hoang-Dung and Guajardo, Jorge and Hoang, Thang},
   booktitle = {2027 IEEE Symposium on Security and Privacy},
   title = {{Efficient Single-Server Online-Offline PIR without Periodic Preprocessing}},
   year = {2027}
 }
 ```
+
+# Permanent Archival DOI
+
+```
+@software{nguyen_2026_22844980,
+  author = {Nguyen, Hoang-Dung and Guajardo, Jorge and Hoang, Thang},
+  title  = {ESCAPE: Efficient Single-Server Online-Offline PIR without Periodic Preprocessing},
+  year   = 2026,
+  doi    = {10.5281/zenodo.22844980},
+  url    = {https://doi.org/10.5281/zenodo.22844980},
+}
+```
+
+The above DOI corresponds to latest release v1 (tar.gz) from commit `3c0048f` (Sep 19 2026)
+and has been evaluated by S&P 2027 Artifact Committee.
 
 <br/>
 
