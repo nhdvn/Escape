@@ -64,6 +64,11 @@ test_comp: $(COMPRESS_PATH_OBJ) $(BUILD)/test_comp.o
 test_noise: $(BUILD)/test_noise.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
+# _demo -- small end-to-end run of the protocol (paper Examples 1-4).
+#   other sizes: make -B _demo DEMO="-DDEMO_N=4 -DDEMO_M=5"
+_demo: _demo.c plhe/plhe.c plhe/plhe.h plhe/params.h
+	$(CC) $(CFLAGS) $(DEMO) -o $@ $< -lm
+
 $(BUILD)/%.o: %.c | $(BUILD)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -108,4 +113,4 @@ $(BUILD)/bench.o $(BUILD)/bench_small.o \
 $(BUILD)/test_comp.o: compress/compress.h compress/mont.h compress/mont_n80.h compress/mont_n40.h
 
 clean:
-	rm -rf $(BUILD) bench bench_small test_comp test_noise
+	rm -rf $(BUILD) bench bench_small test_comp test_noise _demo

@@ -1,4 +1,4 @@
-# Upstream sources downloaded by comparison/measure.py (not part of Escape)
+# Upstream baselines by comparison/measure.py
 comparison/InsPIRe/
 comparison/SimplePIR/
 comparison/VIA/
@@ -6,3 +6,4 @@ comparison/run.out
 
 # compiled benchmark binary (built by make)
 /bench
+/_demo

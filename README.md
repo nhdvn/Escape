@@ -22,7 +22,7 @@ If the code is found useful, we would be appreciated if our paper can be cited w
 
 ```
 @INPROCEEDINGS{nguyen2027Escape,
-  author={Nguyen, HD and Guajardo, Jorge and Hoang, Thang},
+  author={Nguyen, Hoang-Dung and Guajardo, Jorge and Hoang, Thang},
   booktitle = {2027 IEEE Symposium on Security and Privacy},
   title = {{Efficient Single-Server Online-Offline PIR without Periodic Preprocessing}},
   year = {2027}
@@ -32,9 +32,10 @@ If the code is found useful, we would be appreciated if our paper can be cited w
 <br/>
 
 
-## Environment
 
-**Hardware**
+# A. Environment
+
+## A1. Hardware
 
 - x86-64 CPU with AVX-512 IFMA52, AVX-512DQ and AES-NI (e.g. Intel Ice Lake-SP or newer)
 - 36 cores recommended (the server uses 36 threads; fewer cores work, only slower)
@@ -48,7 +49,7 @@ but the timings would then not correspond to the paper.
 
 Tested on 2 x Intel Xeon Platinum 8360Y (48 cores in total) with 1 TB of RAM.
 
-**Software**
+## A2. Software
 
 - Linux (tested on Rocky Linux 8.10)
 - GCC with AVX-512 support, GNU Make, GMP and OpenMP (tested with GCC 8.5.0)
@@ -94,46 +95,31 @@ Full hardware and software requirements, including the versions we tested
 with, are listed in [`metadata.toml`](metadata.toml).
 
 
-
-
-## Directory Structure
+## A3. Directory Structure
 
 ```
-bench.c          benchmark driver: builds the virtual DB, runs client/server, times each stage
+bench.c          benchmark driver: runs client and server, times each stage
 Makefile         builds ./bench (IFMA52 or GMP compress backend)
 metadata.toml    hardware / software requirements and tested versions
 
-plhe/            LWE-based PLHE primitives; params.h holds all parameters (N1, MR1, MC1, BLOCK_KIB, ...)
-client/          client: query generation and answer recovery
-server/          server: answer computation, then compression of the response
-compress/        Paillier compression of the LWE answer
-                   _m512.c: AVX-512 IFMA52 backend (used in the paper), mont*.h: Montgomery primitives
-                   _gmpz.c: portable GMP fallback
-channel/         in-memory client <-> server channel (message exchange)
-utils/           virtual database (db.h), perf-counter timing (measure.h), thread barrier,
-                   and standalone tests (test_cpu, test_comp, test_noise)
+plhe/            LWE-based PLHE; params.h holds all parameters (N1, MR1, MC1, BLOCK_KIB, ...)
+client/          query generation and answer recovery
+server/          answer computation and response compression
+compress/        Paillier compression: _m512.c (IFMA52, from the paper), _gmpz.c (GMP fallback)
+channel/         in-memory client <-> server channel
+utils/           virtual database, perf-counter timing, standalone tests
 
-main/            Step 1: bench.sh (28-setting sweep), summary.py (per-log summary),
-                   estimator.py (LWE security estimate)
-result/          Step 1 output: result/<entry>/db_log2_<log2N>.log
-
-comparison/      Steps 2-3: lattice-based PIR baselines
-  measure.py       downloads, builds and measures SimplePIR, InsPIRe, VIA, OSimplePIR
-  extrapolate.py   extrapolates the baselines to Escape's settings, writes plot points
-  OSimplePIR/      our OpenMP build of SimplePIR
-  Measure/         per-run logs of measure.py
-  summary.log      measured throughputs (Optimistic section feeds extrapolate.py)
-  NewSummary/      extrapolate.py output (per-setting logs, bandwidth, compute, latency)
-
-offline/         Steps 4-5: OO-PIR comparison (Piano, RMS)
-  bandwidth.py     per-query and hint-update bandwidth -> bandwidth.log
-  bench.sh         Escape runs over partition shapes -> result_/
-  storage.py       client storage vs latency -> storage.log
-result_/         offline/bench.sh output
+main/            Step 1: bench.sh -> result/<entry>/db_log2_<log2N>.log
+comparison/      Step 2: measure.py -> summary.log (OSimplePIR/: our OpenMP SimplePIR)
+                 Step 3: extrapolate.py -> NewSummary/
+                 Step 6: rcheck.py -> rcheck.log
+offline/         Step 4: bandwidth.py -> bandwidth.log
+                 Step 5: bench.sh -> result_/, storage.py -> storage.log
+plots/           data points plotted in the paper (Figures 10-13), read by rcheck.py
 ```
 
 
-## Test Build
+## A4. Test Build
 
 ```sh
 make clean     # remove build/ and binaries
@@ -144,7 +130,8 @@ Defaults live in [`plhe/params.h`](plhe/params.h):
 `N1 = MR1 = MC1 = 256`, `LAMBDA = 1024`, `BLOCK_KIB = 4`, sigma `3.2`,
 which describes a logical 64 GiB database (16 M entries × 4 KiB each).
 
-## Reproducing The Paper Results
+
+# B. Experiment
 
 The comparison in the paper is produced in five steps, run from the
 repository root. Step 1 measures Escape, Step 2 measures the baselines, and
@@ -152,6 +139,7 @@ Step 3 extrapolates the baselines to Escape's settings and writes the plot
 points. Step 4 compares per-query bandwidth with the OO-PIR schemes (Piano,
 RMS), and Step 5 compares storage against latency for different partition
 shapes. Steps 1-3 must run in order; Steps 4 and 5 are independent of them.
+The optional Step 6 compares the outputs of Steps 3-5 with paper's figures.
 
 These steps will reproduce the reported numbers/plots in following figures:
 - Figure 10: Total Online E2E Latency (After Step 3) 
@@ -159,7 +147,7 @@ These steps will reproduce the reported numbers/plots in following figures:
 - Figure 12: Hint-Update Average Bandwidth Per Query (After Step 4)
 - Figure 13: Client Storage vs. Latency (Aftet Step 5)
 
-### Step 1: Measure Escape (`main/bench.sh`)
+## Step B1: Measure Escape (`main/bench.sh`)
 
 ```sh
 main/bench.sh                          # writes result/
@@ -186,7 +174,7 @@ The server uses 36 threads. The largest settings (64 KiB entries) need about
 82 GiB of RAM, and the whole sweep takes tens of minutes because every
 setting is rebuilt.
 
-### Step 2: Measure Lattice-Based PIR (`comparison/measure.py`)
+## Step B2: Measure Lattice-Based PIR (`comparison/measure.py`)
 
 ```sh
 cd comparison
@@ -218,7 +206,7 @@ Outputs:
 
 The run takes about 20 minutes, mostly for generating the 2^18 databases.
 
-### Step 3: Extrapolate And Write Plot Points (`comparison/extrapolate.py`)
+## Step B3: Large-Scale Extrapolate (`comparison/extrapolate.py`)
 
 ```sh
 cd comparison
@@ -258,12 +246,12 @@ Everything is written to `comparison/NewSummary/`:
   is the transfer time only; for Escape the server part excludes memory-stall
   time.
 
-In `bandwidth`, `compute` and `latency` the points are grouped by scheme, then by entry
-size, one `(index, value)` line per database size, where the index counts
-1, 2, … through the sizes in the Table above. The lines can be pasted
-directly as plot coordinates.
+In `bandwidth`, `compute` and `latency` the points are grouped by scheme, 
+then by entry size, one `(index, value)` line per database size, where the 
+index counts 1, 2, … through the sizes in the Table above. The lines can 
+be pasted directly as plot coordinates.
 
-### Step 4: Compare Bandwidth (`offline/bandwidth.py`)
+## Step B4: Compare Bandwidth (`offline/bandwidth.py`)
 
 ```sh
 python3 offline/bandwidth.py
@@ -280,8 +268,7 @@ formulas of each scheme, with no measurement needed, and writes four tables to
 - **Tables 3 and 4**: hint-update bandwidth per query for (2^30 x 8 KiB) and
   (2^30 x 64 KiB) databases, for 2^11 ... 2^35 online queries. Each value is
   max(DB / Q, per-query cost): the database download of a hint refresh,
-  spread over the Q queries it serves, or the per-query cost of Tables 1 and 2,
-  whichever is larger.
+  spread over the Q queries it serves.
 
 - Table 1 and 2 are expected to match with Figure 11.
 - Table 3 and 4 are expected to match with Figure 12.
@@ -289,7 +276,7 @@ formulas of each scheme, with no measurement needed, and writes four tables to
 The entry sizes, N and the query counts are constants at the top of the
 script (`DEFAULT_EXPS`, `FIXED_LOG_N`, `QUERY_EXPS`).
 
-### Step 5: Compare Storage And Latency (`offline/bench.sh`, `offline/storage.py`)
+## Step B5: Compare Storage + Latency (`offline/bench.sh`, `offline/storage.py`)
 
 ```sh
 offline/bench.sh                           # writes result_/
@@ -311,15 +298,26 @@ same summary block as Step 1). Use `OUT_BASE=<dir> offline/bench.sh` to write
 elsewhere. The largest setting (64 KiB, N1 = 65536) takes about 15 minutes and
 about 82 GiB of RAM.
 
-`offline/storage.py` then writes two tables to `offline/storage.log`:
+`offline/storage.py` then writes two tables (Escape vs OO-PIR) to `offline/storage.log`.
 
-- **Escape**: for each shape, the end-to-end latency from the `result_/` log
-  and the storage MR1 x MC1 x alpha x entry size, where N = N1 x MR1 x MC1 and
-  alpha = log2(N) if MR1 x MC1 < sqrt(N), otherwise ln(N).
-- **OO-PIR** (Piano, RMS) at N = 2^30 with 8, 16 and 64 KiB entries: the
-  latency is the per-query bandwidth of Step 4 sent at 70 Mbps, and the
-  storage is sqrt(N) x 40 x 4 x entry size (Piano) or sqrt(N) x 40 x 3 x entry
-  size (RMS).
+## Step B6 (Optional): Result Check (`comparison/rcheck.py`)
+
+```sh
+cd comparison
+python3 rcheck.py                    # writes comparison/rcheck.log
+```
+
+`plots/` holds the data points plotted in the paper. `rcheck.py` puts the
+fresh outputs of Steps 3-5 next to them, value by value, with the relative
+difference (paper - fresh) / paper; differences above 10% are marked `!`.
+
+| Fresh output                                        | Paper values                        | Figure |
+|-----------------------------------------------------|-------------------------------------|--------|
+| `comparison/NewSummary/{latency,bandwidth,compute}` | `plots/{latency,bandwidth,compute}` | 10     |
+| `offline/bandwidth.log`                             | `plots/bandwidth.log`               | 11, 12 |
+| `offline/storage.log`                               | `plots/storage.log`                 | 13     |
+
+# Additional Commands
 
 ## Manual Benchmark
 

@@ -1,0 +1,29 @@
+Paper values (Figure 13)
+
+Escape latency vs storage, N = 2^30 entries
+
+  block  |A| = N1    MR1    MC1  latency_s  storage_GiB
+-------------------------------------------------------
+   8KiB      1024   1024   1024       1.07          178
+   8KiB      4096    512    512        1.7           45
+   8KiB     16384    256    256        3.1           12
+   8KiB     65536    128    128        6.5          4.5
+  16KiB      1024   1024   1024        1.5          357
+  16KiB      4096    512    512        2.2           89
+  16KiB     16384    256    256        3.7           22
+  16KiB     65536    128    128        7.3          5.6
+  64KiB      1024   1024   1024        4.2         1300
+  64KiB      4096    512    512        5.2        332.7
+  64KiB     16384    256    256        7.9         83.2
+  64KiB     65536    128    128       15.9         20.8
+
+OO-PIR latency vs storage, N = 2^30 entries
+
+  block  scheme  latency_s  storage_GiB
+---------------------------------------
+   8KiB   Piano       30.7           43
+   8KiB     RMS        4.1         32.2
+  16KiB   Piano      61.36         85.8
+  16KiB     RMS        8.2         64.4
+  64KiB   Piano     245.43        343.6
+  64KiB     RMS      32.72        257.7
